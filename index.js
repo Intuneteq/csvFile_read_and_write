@@ -27,7 +27,7 @@ const csvWriter = createCsvWriter({
 // const appendWriter =
 
 const handleCvs = async () => {
-  await csvtojson() //using csvtojson package to convert my csv file to json
+   csvtojson() //using csvtojson package to convert my csv file to json
     .fromFile(csvFilePath)
     .then((json) => {
       //   console.log(json);
@@ -99,6 +99,7 @@ const handleCvs = async () => {
     const hashValue = crypto.createHash("sha256"); //creating my hash function
     const fileBuffer = fs.readFileSync(outputFolder + "/" + file);
     const finalHex = hashValue.update(fileBuffer).digest("hex"); //hashed values
+    // console.log(finalHex);
     hexArray.push(finalHex); //storing my hashed values in the predefined array
   });
   //   console.log(hexArray);
@@ -108,6 +109,8 @@ const handleCvs = async () => {
     return { hash: item };
   });
 
+
+
   //   console.log(records);
   csvWriter.writeRecords(records).then(() => {
     //pushing array into csv file
@@ -115,12 +118,14 @@ const handleCvs = async () => {
   });
 
   //step3: appending old csv file from team with the hashed values
-  records.forEach(item => {
-         fs.appendFile(csvFilePath, item.hash, (err) => {
-          if (err) throw err;
-        });
-    })
-    console.log('The "data to append" was appended to file!');
+  const originalData = await csvtojson().fromFile(csvFilePath);
+
+  const dataWithHash = originalData.map((item, index) => {
+    return {...item, hash: hexArray[index]}
+  })
+  console.log(dataWithHash);
+
+
 };
 
 handleCvs();
